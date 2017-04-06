@@ -1,9 +1,8 @@
 class Node:
-    def __init__(self):
+	def __init__(self):
     	# label: name of attribute for splitting
-        self.label = None
-        self.children = {}
-	# you may want to add additional fields here...
+		self.label = None
+		self.children = {}
 
 	def set_label(self, label):
 		self.label = label
@@ -18,3 +17,13 @@ class Node:
 	def add_children(self, attribute_val, child):
 		self.children[attribute_val] = child
 
+def tester():
+	a = Node()
+	b = Node()
+	a.set_label('y')
+	a.add_children('y',b)
+	print a.get_children()
+	a.set_label('do the test')
+	print a.get_label()
+
+tester()
