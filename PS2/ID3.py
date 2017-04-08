@@ -1,4 +1,5 @@
 from node import Node
+import sys
 import math
 
 def ID3(examples, default):
@@ -10,9 +11,16 @@ def ID3(examples, default):
   '''
   if not examples:
   	return default
-  elif not (item for item in examples if item["Class"] != examples[0]["Class"]).next():
-    return examples[0]["Class"]
-  max = sys.minint
+  else:
+  	flag = 0
+  	for item in examples:
+  		if item["Class"]!=examples[0]["Class"]:
+  			flag = 1
+  			break 
+  	if not flag:
+  		c2 = examples[0]["Class"]
+    	return c2
+  max1 = -sys.maxint-1
   min = sys.maxint
   location=""
   for attr in examples[0].keys():
@@ -23,21 +31,20 @@ def ID3(examples, default):
    		sum[i.get(attr)] += 1
    	entropy = 0
    	for i in sum.values():
-   		p = i/len(examples)
-   		entropy += math.log2(p)*p
+   		p = i*1.0/len(examples)
+   		entropy += math.log(p,2)*p
    	if entropy < min:
    		min = entropy
    		location = attr
-   	if entropy > max:
-   		max = entropy
-  if min == max:
+   	if entropy > max1:
+   		max1 = entropy
+  if min == max1:
   	c={}
-  	if i.get("Class") in examples:
+  	for i in examples:
   		if i.get("Class") not in c:
   			c[i.get("Class")] = 0
   		c[i.get("Class")] += 1
   	return max(c, key = c.get)
-
   split={}
   for i in examples:
   	temp = i.get(location)
@@ -51,6 +58,7 @@ def ID3(examples, default):
   for i in split.keys():
   	child = Node()
   	root.add_children(i,ID3(split.get(i),default))
+  return root
 
 def prune(node, examples):
   '''
@@ -58,12 +66,20 @@ def prune(node, examples):
   to improve accuracy on the validation data; the precise pruning strategy is up to you.
   '''
 
+
 def test(node, examples):
   '''
   Takes in a trained tree and a test set of examples.  Returns the accuracy (fraction
   of examples the tree classifies correctly).
   '''
-
+  total=0
+  for i in examples:
+  	root = node
+  	while root.get_children() :
+  		root = root.get_children().get(i[root.get_label()])
+  	if root["Class"]==i["Class"]:
+  		total+=1
+  return total*1.0/len(examples)
 
 def evaluate(node, example):
   '''
