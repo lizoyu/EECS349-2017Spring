@@ -32,8 +32,12 @@ def ID3(examples, default):
    		max = entropy
   if min == max:
   	c={}
-  	if i.get("class") in examples:
-  		
+  	if i.get("Class") in examples:
+  		if i.get("Class") not in c:
+  			c[i.get("Class")] = 0
+  		c[i.get("Class")] += 1
+  	return max(c, key = c.get)
+
   split={}
   for i in examples:
   	temp = i.get(location)
