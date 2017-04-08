@@ -33,7 +33,7 @@ def ID3(examples, default):
   if min == max:
   	c={}
   	if i.get("class") in examples:
-  	
+  		
   split={}
   for i in examples:
   	temp = i.get(location)
