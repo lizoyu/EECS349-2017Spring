@@ -13,13 +13,13 @@ def ID3(examples, default):
   	return default
   else:
   	flag = 0
+  	c2 = examples[0]["Class"]
   	for item in examples:
   		if item["Class"]!=examples[0]["Class"]:
   			flag = 1
   			break 
   	if not flag:
-  		c2 = examples[0]["Class"]
-    	return c2
+  		return c2
   max1 = -sys.maxint-1
   min = sys.maxint
   location=""
@@ -48,11 +48,12 @@ def ID3(examples, default):
   split={}
   for i in examples:
   	temp = i.get(location)
-  	del i[location]
+  	temp2 = i.copy()
+  	del temp2[location]
   	if temp not in split:
-  		split[temp]=[i]
+  		split[temp]=[temp2]
   	else:
-  		split[temp].append(i)
+  		split[temp].append(temp2)
   root = Node()
   root.set_label(location)
   for i in split.keys():
@@ -65,6 +66,18 @@ def prune(node, examples):
   Takes in a trained tree and a validation set of examples.  Prunes nodes in order
   to improve accuracy on the validation data; the precise pruning strategy is up to you.
   '''
+  update=1.0
+  previous = self.test(node,examples)
+  while update>0:
+  	root = node.copy()
+  	while root.get_children():
+  		dic = root.get_children()
+  		parent = root
+  		root = dic.get(i[root.get_label()])
+  		if not isinstance(root,Node) :
+  			break
+
+
 
 
 def test(node, examples):
@@ -76,8 +89,11 @@ def test(node, examples):
   for i in examples:
   	root = node
   	while root.get_children() :
-  		root = root.get_children().get(i[root.get_label()])
-  	if root["Class"]==i["Class"]:
+  		dic = root.get_children()
+  		root = dic.get(i[root.get_label()])
+  		if not isinstance(root,Node) :
+  			break
+  	if root==i["Class"]:
   		total+=1
   return total*1.0/len(examples)
 
@@ -86,3 +102,12 @@ def evaluate(node, example):
   Takes in a tree and one example.  Returns the Class value that the tree
   assigns to the example.
   '''
+  root = node
+  if not isinstance(root,Node):
+  	return root
+  while root.get_children() :
+  	dic = root.get_children()
+  	root = dic.get(example[root.get_label()])
+  	if not isinstance(root,Node) :
+  		break
+  return root
