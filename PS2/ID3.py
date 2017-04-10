@@ -20,6 +20,8 @@ def ID3(examples, default):
   			break 
   	if not flag:
   		return c2
+
+  # compute entropy and choose the smallest
   max1 = -sys.maxint-1
   min = sys.maxint
   location=""
@@ -45,6 +47,8 @@ def ID3(examples, default):
   			c[i.get("Class")] = 0
   		c[i.get("Class")] += 1
   	return max(c, key = c.get)
+
+  # split the data and create the nodes
   split={}
   for i in examples:
   	temp = i.get(location)
@@ -66,6 +70,8 @@ def prune(node, examples):
   Takes in a trained tree and a validation set of examples.  Prunes nodes in order
   to improve accuracy on the validation data; the precise pruning strategy is up to you.
   '''
+
+  # get all the parent nodes of leaves
   update=1.0
   previous = self.test(node,examples)
   while update>0:
@@ -74,7 +80,7 @@ def prune(node, examples):
   		dic = root.get_children()
   		parent = root
   		root = dic.get(i[root.get_label()])
-  		if not isinstance(root,Node) :
+  		if not isinstance(root,Node):
   			break
 
 
