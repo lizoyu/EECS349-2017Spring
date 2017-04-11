@@ -1,6 +1,7 @@
 from node import Node
 import sys
 import math
+import copy
 
 def ID3(examples, default):
   '''
@@ -9,60 +10,78 @@ def ID3(examples, default):
   and the target class variable is a special attribute with the name "Class".
   Any missing attributes are denoted with a value of "?"
   '''
+
+  # when 'examples' is empty
   if not examples:
   	return default
   else:
-  	flag = 0
-  	c2 = examples[0]["Class"]
+  	# return the class if all the data have the same class
+  	test_class = examples[0]['Class']
+  	class_counter = 0
   	for item in examples:
-  		if item["Class"]!=examples[0]["Class"]:
-  			flag = 1
-  			break 
-  	if not flag:
-  		return c2
+  		if item['Class'] == test_class:
+  			class_counter += 1
+  	if class_counter == len(examples):
+  		return test_class
 
   # compute entropy and choose the smallest
-  max1 = -sys.maxint-1
-  min = sys.maxint
-  location=""
+  max_entropy = -sys.maxint - 1
+  min_entropy = sys.maxint
+  label_class = ""
   for attr in examples[0].keys():
-   	sum = {}
-   	for i in examples:
-   		if i.get(attr) not in sum:
-   			sum[i.get(attr)] = 0
-   		sum[i.get(attr)] += 1
-   	entropy = 0
-   	for i in sum.values():
-   		p = i*1.0/len(examples)
-   		entropy += math.log(p,2)*p
-   	if entropy < min:
-   		min = entropy
-   		location = attr
-   	if entropy > max1:
-   		max1 = entropy
-  if min == max1:
-  	c={}
-  	for i in examples:
-  		if i.get("Class") not in c:
-  			c[i.get("Class")] = 0
-  		c[i.get("Class")] += 1
-  	return max(c, key = c.get)
+  	if attr != 'Class':
+   		sum = {}
+   		# count the appearance of attribute values 
+   		for i in examples:
+   			if i.get(attr) not in sum:
+   				sum[i.get(attr)] = 0
+   			sum[i.get(attr)] += 1
+   		# compute the entropy
+   		entropy = 0
+   		for i in sum.values():
+   			if i != 0:
+   				p = i*1.0/len(examples)
+   				entropy += math.log(p,2)*p
+   		# choose the smallest one
+   		if entropy < min_entropy:
+   			min_entropy = entropy
+   			label_class = attr
+   		if entropy > max_entropy:
+   			max_entropy = entropy
+  	# when all data have the same attribute value, they have the same entropy,
+  	# so minimum equals maximum, then we return the mode class
+  	if min_entropy == 0 and min_entropy == max_entropy:
+  		count = {}
+  		for data in examples:
+  			if data.get('Class') not in count:
+  				count[data.get('Class')] = 0
+  			count[data.get('Class')] += 1
+  		return max(count, key = count.get)
 
-  # split the data and create the nodes
+  # split the data and create the root node with its children (nodes)
   split={}
-  for i in examples:
-  	temp = i.get(location)
-  	temp2 = i.copy()
-  	del temp2[location]
+  for data in examples:
+  	temp = data.get(label_class)
+  	temp2 = copy.deepcopy(data)
+  	
+  	del temp2[label_class]
+  	# put data into different keys(attribute value)
   	if temp not in split:
   		split[temp]=[temp2]
   	else:
   		split[temp].append(temp2)
+  # create the node with the label
   root = Node()
-  root.set_label(location)
-  for i in split.keys():
-  	child = Node()
-  	root.add_children(i,ID3(split.get(i),default))
+  root.set_label(label_class)
+  # create the children for the node and add each child node from recursive ID3
+  for attr_val in split.keys():
+  	count = {}
+  	for data in split.get(attr_val):
+  		if data.get('Class') not in count:
+  			count[data.get('Class')] = 0
+  		count[data.get('Class')] += 1
+  	root.add_children( attr_val, ID3(split.get(attr_val),max(count, key = count.get)) )
+
   return root
 
 def prune(node, examples):
@@ -71,36 +90,84 @@ def prune(node, examples):
   to improve accuracy on the validation data; the precise pruning strategy is up to you.
   '''
 
-  # get all the parent nodes of leaves
-  update=1.0
-  previous = self.test(node,examples)
-  while update>0:
-  	root = node.copy()
-  	while root.get_children():
-  		dic = root.get_children()
-  		parent = root
-  		root = dic.get(i[root.get_label()])
-  		if not isinstance(root,Node):
-  			break
+  # keep until even the best one cannot improve accuracy
+  while True:
+    accuracy = test(node,examples)
+    # get all the parent nodes of leaves
+    root = copy.deepcopy(node)
+    parents = []
+    queue = [root]
+    while queue:
+      parent = queue.pop(0)
+      children = parent.get_children()
+      leaf_counter = 0
+      for child in children.values():
+        if not isinstance(child, Node):
+          leaf_counter += 1
+        else:
+          queue.append(child)
+      if leaf_counter == len(children):
+      	parent.isBottom = True
+        parents.append(parent)
 
+    # count the mode class for each parent node using validation sets
+    class_counter = {}
+    for parent in parents:
+      class_counter[parent.get_label()] = {}
+    for data in examples:
+      root = copy.deepcopy(node)
+      while not root.isBottom:
+        children = root.get_children()
+        root = children.get(data[root.get_label()])
+        if not isinstance(root, Node):
+        	break
+      if not isinstance(root, Node):
+      	break
+      if data['Class'] not in class_counter[root.get_label()]:
+        class_counter[root.get_label()][data['Class']] = 0
+      class_counter[root.get_label()][data['Class']] += 1
 
-
+    # compute the accuracy change and choose the best
+    children_cutted = {}
+    best_node = None
+    best_acc = 0
+    for parent in parents:
+      children_cut = copy.deepcopy(parent.get_children())
+      mode = ""
+      num = 0
+      for Class, count in class_counter[parent.get_label()].items():
+        if(count > num):
+          mode = Class
+          num = count
+      for class_val in parent.children.values():
+        class_val = mode
+      delta_acc = test(node, examples) - accuracy
+      if(delta_acc > best_acc):
+        best_acc = delta_acc
+        if best_node:
+          best_node.children = children_cutted
+        best_node = parent
+        children_cutted = children_cut
+    if( best_acc <= 0 ):
+    	break
 
 def test(node, examples):
   '''
   Takes in a trained tree and a test set of examples.  Returns the accuracy (fraction
   of examples the tree classifies correctly).
   '''
-  total=0
+  total = 0
   for i in examples:
   	root = node
-  	while root.get_children() :
+  	if not isinstance(root,Node):
+  		return root
+  	while root.get_children():
   		dic = root.get_children()
   		root = dic.get(i[root.get_label()])
-  		if not isinstance(root,Node) :
+  		if not isinstance(root,Node):
   			break
-  	if root==i["Class"]:
-  		total+=1
+  	if root == i["Class"]:
+  		total += 1
   return total*1.0/len(examples)
 
 def evaluate(node, example):
@@ -114,6 +181,6 @@ def evaluate(node, example):
   while root.get_children() :
   	dic = root.get_children()
   	root = dic.get(example[root.get_label()])
-  	if not isinstance(root,Node) :
+  	if not isinstance(root,Node):
   		break
   return root

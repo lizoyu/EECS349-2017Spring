@@ -3,6 +3,7 @@ class Node:
     	# label: name of attribute for splitting
 		self.label = None
 		self.children = {}
+		self.isBottom = False
 
 	def set_label(self, label):
 		self.label = label
