@@ -4,6 +4,7 @@ class Node:
 		self.label = None
 		self.children = {}
 		self.isBottom = False
+		self.isChecked = False
 
 	def set_label(self, label):
 		self.label = label

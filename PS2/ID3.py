@@ -103,12 +103,14 @@ def prune(node, examples):
       for child in children.values():
         if not isinstance(child, Node):
           leaf_counter += 1
+        elif child.isChecked:
+        	leaf_counter += 1
         else:
           queue.append(child)
       if leaf_counter == len(children):
       	parent.isBottom = True
         parents.append(parent)
-    #print parents
+
     # count the mode class for each parent node using validation sets
     class_counter = {}
     for parent in parents:
@@ -120,6 +122,8 @@ def prune(node, examples):
         root = children.get(data[root.get_label()])
         if not isinstance(root, Node):
         	break
+      if isinstance(root, Node) and root.isChecked:
+      	continue
       if isinstance(root, Node):
       	if data['Class'] not in class_counter[root.get_label()]:
         	class_counter[root.get_label()][data['Class']] = 0
@@ -136,8 +140,8 @@ def prune(node, examples):
     	num = 0
     	for Class, count in class_counter[parent.get_label()].items():
     		if count > num:
-				mode = Class
-				num = count
+					mode = Class
+					num = count
     	if num == 0:
     		continue
     	for key in parent.children.keys():
@@ -151,6 +155,8 @@ def prune(node, examples):
     		children_cutted = children_cut
     	else:
     		parent.children = children_cut
+    if best_node:
+    	best_node.isChecked = True
     if best_acc <= 0.01:
     	if best_node:
     		best_node.children = children_cutted
