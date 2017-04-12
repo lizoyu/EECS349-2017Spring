@@ -94,9 +94,8 @@ def prune(node, examples):
   while True:
     accuracy = test(node,examples)
     # get all the parent nodes of leaves
-    root = copy.deepcopy(node)
     parents = []
-    queue = [root]
+    queue = [node]
     while queue:
       parent = queue.pop(0)
       children = parent.get_children()
@@ -109,46 +108,52 @@ def prune(node, examples):
       if leaf_counter == len(children):
       	parent.isBottom = True
         parents.append(parent)
-
+    #print parents
     # count the mode class for each parent node using validation sets
     class_counter = {}
     for parent in parents:
       class_counter[parent.get_label()] = {}
     for data in examples:
-      root = copy.deepcopy(node)
+      root = node
       while not root.isBottom:
         children = root.get_children()
         root = children.get(data[root.get_label()])
         if not isinstance(root, Node):
         	break
-      if not isinstance(root, Node):
-      	break
-      if data['Class'] not in class_counter[root.get_label()]:
-        class_counter[root.get_label()][data['Class']] = 0
-      class_counter[root.get_label()][data['Class']] += 1
+      if isinstance(root, Node):
+      	if data['Class'] not in class_counter[root.get_label()]:
+        	class_counter[root.get_label()][data['Class']] = 0
+      	class_counter[root.get_label()][data['Class']] += 1
 
     # compute the accuracy change and choose the best
     children_cutted = {}
     best_node = None
     best_acc = 0
+    children_cut = {}
     for parent in parents:
-      children_cut = copy.deepcopy(parent.get_children())
-      mode = ""
-      num = 0
-      for Class, count in class_counter[parent.get_label()].items():
-        if(count > num):
-          mode = Class
-          num = count
-      for class_val in parent.children.values():
-        class_val = mode
-      delta_acc = test(node, examples) - accuracy
-      if(delta_acc > best_acc):
-        best_acc = delta_acc
-        if best_node:
-          best_node.children = children_cutted
-        best_node = parent
-        children_cutted = children_cut
-    if( best_acc <= 0 ):
+    	children_cut = copy.deepcopy(parent.get_children())
+    	mode = ""
+    	num = 0
+    	for Class, count in class_counter[parent.get_label()].items():
+    		if count > num:
+				mode = Class
+				num = count
+    	if num == 0:
+    		continue
+    	for key in parent.children.keys():
+    		parent.children[key] = mode
+    	delta_acc = test(node, examples) - accuracy
+    	if delta_acc > best_acc:
+    		best_acc = delta_acc
+    		if best_node:
+    			best_node.children = children_cutted
+    		best_node = parent
+    		children_cutted = children_cut
+    	else:
+    		parent.children = children_cut
+    if best_acc <= 0.01:
+    	if best_node:
+    		best_node.children = children_cutted
     	break
 
 def test(node, examples):
