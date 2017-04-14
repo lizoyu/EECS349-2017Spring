@@ -97,11 +97,11 @@ def plottestdata(inFile):
   withoutaccuracy = []
   data = parse.parse(inFile)
   for j in range(10,300,10):
+    random.shuffle(data)
     for i in range(100):
-      random.shuffle(data)
       train = data[:j]
-      test = data[j:310]
-      valid = data[310:]
+      test = data[j:(len(data)-j)/2]
+      valid = data[(len(data)-j)/2:]
       tree = ID3.ID3(train, 'democrat')
       ID3.prune(tree, valid)
       acc = ID3.test(tree, test)
