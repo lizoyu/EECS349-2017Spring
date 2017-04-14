@@ -1,5 +1,5 @@
 import ID3, parse, random
-#from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 
 def testID3AndEvaluate():
@@ -92,6 +92,7 @@ def testPruningOnHouseData(inFile):
   print withoutPruning
   print "average with pruning",sum(withPruning)/len(withPruning)," without: ",sum(withoutPruning)/len(withoutPruning)
 
+<<<<<<< HEAD
 # inFile - string location of the house data file
 def LearningCurvePlot(inFile):
   withPruning = []
@@ -151,3 +152,41 @@ def testTrainData(inFile):
 testPruningOnHouseData('house_votes_84.data')
 #LearningCurvePlot('house_votes_84.data')
 #testTrainData('house_votes_84.data')
+=======
+def plottestdata(inFile):
+  withPruning = []
+  withoutPruning = []
+  withaccuracy = []
+  withoutaccuracy = []
+  data = parse.parse(inFile)
+  for j in range(10,300,10):
+    random.shuffle(data)
+    for i in range(100):
+      train = data[:j]
+      test = data[j:(len(data)-j)/2]
+      valid = data[(len(data)-j)/2:]
+      tree = ID3.ID3(train, 'democrat')
+      ID3.prune(tree, valid)
+      acc = ID3.test(tree, test)
+      if isinstance(acc,float):
+        withPruning.append(acc)
+      tree = ID3.ID3(train+valid, 'democrat')
+      acc = ID3.test(tree, test)
+      if isinstance(acc,float):
+        withoutPruning.append(acc)
+    acc = sum(withPruning)/len(withPruning)
+    withaccuracy.append(acc)
+    acc = sum(withoutPruning)/len(withoutPruning)
+    withoutaccuracy.append(acc)
+  plt.plot(range(10,300,10),withoutaccuracy,'ro-', label = 'without Pruning')
+  plt.plot(range(10,300,10),withaccuracy,'bo-', label = 'with Pruning')
+  plt.xlabel('number of trianing example')
+  plt.ylabel('accuracy on test data')
+
+  plt.show()
+#testID3AndEvaluate()
+#testPruning()
+#testID3AndTest()
+#testPruningOnHouseData('house_votes_84.data')
+plottestdata('house_votes_84.data')
+>>>>>>> origin/master

@@ -104,18 +104,19 @@ def prune(node, examples):
     queue = [node]
     while queue:
       parent = queue.pop(0)
-      children = parent.get_children()
-      leaf_counter = 0
-      for child in children.values():
-        if not isinstance(child, Node):
-          leaf_counter += 1
-        elif child.isChecked:
-        	leaf_counter += 1
-        else:
-          queue.append(child)
-      if leaf_counter == len(children):
-      	parent.isBottom = True
-        parents.append(parent)
+      if isinstance(parent, Node):
+        children = parent.get_children()
+        leaf_counter = 0
+        for child in children.values():
+          if not isinstance(child, Node):
+           leaf_counter += 1
+          elif child.isChecked:
+           leaf_counter += 1
+          else:
+           queue.append(child)
+        if leaf_counter == len(children):
+        	parent.isBottom = True
+      parents.append(parent)
 
     # count the mode class for each parent node using validation sets
     class_counter = {}
