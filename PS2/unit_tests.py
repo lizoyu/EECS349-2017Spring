@@ -90,7 +90,39 @@ def testPruningOnHouseData(inFile):
   print withoutPruning
   print "average with pruning",sum(withPruning)/len(withPruning)," without: ",sum(withoutPruning)/len(withoutPruning)
 
+def plottestdata(inFile):
+  withPruning = []
+  withoutPruning = []
+  withaccuracy = []
+  withoutaccuracy = []
+  data = parse.parse(inFile)
+  for j in range(10,300,10):
+    for i in range(100):
+      random.shuffle(data)
+      train = data[:j]
+      test = data[j:310]
+      valid = data[310:]
+      tree = ID3.ID3(train, 'democrat')
+      ID3.prune(tree, valid)
+      acc = ID3.test(tree, test)
+      if isinstance(acc,float):
+        withPruning.append(acc)
+      tree = ID3.ID3(train+valid, 'democrat')
+      acc = ID3.test(tree, test)
+      if isinstance(acc,float):
+        withoutPruning.append(acc)
+    acc = sum(withPruning)/len(withPruning)
+    withaccuracy.append(acc)
+    acc = sum(withoutPruning)/len(withoutPruning)
+    withoutaccuracy.append(acc)
+  plt.plot(range(10,300,10),withoutaccuracy,'ro-', label = 'without Pruning')
+  plt.plot(range(10,300,10),withaccuracy,'bo-', label = 'with Pruning')
+  plt.xlabel('number of trianing example')
+  plt.ylabel('accuracy on test data')
+
+  plt.show()
 #testID3AndEvaluate()
 #testPruning()
 #testID3AndTest()
-testPruningOnHouseData('house_votes_84.data')
+#testPruningOnHouseData('house_votes_84.data')
+plottestdata('house_votes_84.data')
