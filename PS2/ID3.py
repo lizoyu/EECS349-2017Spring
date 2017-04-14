@@ -30,18 +30,24 @@ def ID3(examples, default):
   label_class = ""
   for attr in examples[0].keys():
   	if attr != 'Class':
-   		sum = {}
+   		counter = {}
    		# count the appearance of attribute values 
    		for i in examples:
-   			if i.get(attr) not in sum:
-   				sum[i.get(attr)] = 0
-   			sum[i.get(attr)] += 1
+   			if i.get(attr) not in counter:
+   				counter[i.get(attr)] = {}
+   			if i['Class'] not in counter[i.get(attr)]:
+   				counter[i.get(attr)][i['Class']] = 0
+   			counter[i.get(attr)][i['Class']] += 1
    		# compute the entropy
    		entropy = 0
-   		for i in sum.values():
-   			if i != 0:
-   				p = i*1.0/len(examples)
-   				entropy += math.log(p,2)*p
+   		for i in counter.values():
+   			H = 0
+   			attrVal_sum = sum(i.itervalues())
+   			for class_count in i.values():
+   				if class_count != 0:
+   					p = class_count*1.0/attrVal_sum
+   					H += math.log(p,2)*p
+   			entropy += attrVal_sum*H/len(examples)
    		# choose the smallest one
    		if entropy < min_entropy:
    			min_entropy = entropy
@@ -168,18 +174,22 @@ def test(node, examples):
   of examples the tree classifies correctly).
   '''
   total = 0
+  size = len(examples)
   for i in examples:
   	root = node
   	if not isinstance(root,Node):
   		return root
   	while root.get_children():
   		dic = root.get_children()
+  		if i[root.get_label()] == '?':
+  			size -= 1
+  			break
   		root = dic.get(i[root.get_label()])
   		if not isinstance(root,Node):
   			break
   	if root == i["Class"]:
   		total += 1
-  return total*1.0/len(examples)
+  return total*1.0/size
 
 def evaluate(node, example):
   '''
@@ -195,3 +205,11 @@ def evaluate(node, example):
   	if not isinstance(root,Node):
   		break
   return root
+
+def preprocess(exmaples):
+	mode = {}
+	for data in examples:
+		for attr, attr_val in data.items():
+			if attr_val == '?':
+				if attr in mode:
+					data[attr] = mode[attr]
