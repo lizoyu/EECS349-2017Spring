@@ -92,7 +92,7 @@ def testPruningOnHouseData(inFile):
   print withoutPruning
   print "average with pruning",sum(withPruning)/len(withPruning)," without: ",sum(withoutPruning)/len(withoutPruning)
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
 # inFile - string location of the house data file
 def LearningCurvePlot(inFile):
   withPruning = []
@@ -149,10 +149,10 @@ def testTrainData(inFile):
 #testID3AndEvaluate()
 #testPruning()
 #testID3AndTest()
-testPruningOnHouseData('house_votes_84.data')
+#testPruningOnHouseData('house_votes_84.data')
 #LearningCurvePlot('house_votes_84.data')
 #testTrainData('house_votes_84.data')
-=======
+#=======
 def plottestdata(inFile):
   withPruning = []
   withoutPruning = []
@@ -186,7 +186,7 @@ def plottestdata(inFile):
   plt.show()
 #testID3AndEvaluate()
 #testPruning()
-#testID3AndTest()
+testID3AndTest()
 #testPruningOnHouseData('house_votes_84.data')
-plottestdata('house_votes_84.data')
->>>>>>> origin/master
+#plottestdata('house_votes_84.data')
+#>>>>>>> origin/master
