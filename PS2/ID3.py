@@ -189,7 +189,8 @@ def test(node, examples):
 				break
 		if root == i["Class"]:
 			total += 1
-	return total*1.0/size
+	if size!= 0:
+		return total*1.0/size
 
 def evaluate(node, example):
 	'''
