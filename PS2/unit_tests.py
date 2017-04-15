@@ -186,7 +186,7 @@ def plottestdata(inFile):
   plt.show()
 #testID3AndEvaluate()
 #testPruning()
-testID3AndTest()
+#testID3AndTest()
 #testPruningOnHouseData('house_votes_84.data')
-#plottestdata('house_votes_84.data')
+plottestdata('house_votes_84.data')
 #>>>>>>> origin/master

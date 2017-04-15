@@ -51,12 +51,12 @@ def ID3(examples, default):
 			# choose the smallest one
 			if entropy < min_entropy:
 				min_entropy = entropy
-				label_class = attr
 			if entropy > max_entropy:
 				max_entropy = entropy
+				label_class = attr
 		# when all data have the same attribute value, they have the same entropy,
 		# so minimum equals maximum, then we return the mode class
-	if min_entropy == 0 and min_entropy == max_entropy:
+	if min_entropy == 0 and min_entropy == max_entropy and len(examples[0].keys())>2:
 		count = {}
 		for data in examples:
 			if data.get('Class') not in count:
@@ -69,7 +69,6 @@ def ID3(examples, default):
 	for data in examples:
 		temp = data.get(label_class)
 		temp2 = copy.deepcopy(data)
-		
 		del temp2[label_class]
 		# put data into different keys(attribute value)
 		if temp not in split:
@@ -185,10 +184,7 @@ def test(node, examples):
 			if i[root.get_label()] == '?':
 				size -= 1
 				break
-			print root.get_label()
 			root = dic.get(i[root.get_label()])
-			if isinstance(root,Node):
-				print root.get_label()
 			if not isinstance(root,Node):
 				break
 		if root == i["Class"]:
